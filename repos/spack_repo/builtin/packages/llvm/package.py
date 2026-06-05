@@ -874,6 +874,8 @@ class Llvm(CMakePackage, CudaPackage, LlvmDetection, CompilerPackage):
         if name == "ldflags" and self.spec.satisfies("%intel"):
             flags.append("-shared-intel")
             return (None, flags, None)
+        if name in ("cflags", "cxxflags"):
+            flags.append(f"--gcc-install-dir={self.spec['gcc-runtime'].prefix}")
         return (flags, None, None)
 
     def setup_build_environment(self, env: EnvironmentModifications) -> None:
@@ -1161,6 +1163,31 @@ class Llvm(CMakePackage, CudaPackage, LlvmDetection, CompilerPackage):
 
         return cmake_args
 
+    @classmethod
+    def runtime_constraints(cls, *, spec, pkg):
+        '''
+        For now, this unconditionally injects llvm-runtime and gcc-runtime; since
+        consumers of LLVM may use either set of runtime components
+        '''
+        for language in ("c", "cxx", "fortran"):
+            pkg("*").depends_on(
+                "gcc-runtime",
+                when=f"%[deptypes=build virtuals={language}] {spec.name}@{spec.versions}",
+                type="link",
+                description=f"Inject gcc-runtime when llvm is used as {language} compiler"
+            )
+        #     pkg("*").depends_on(
+        #         f"llvm-runtime@{spec.version}",
+        #         when=f"%[deptypes=build virtuals={language}] {spec.name}@{spec.versions}",
+        #         type="link",
+        #         description=f"Inject llvm-runtime when llvm is used as {language} compiler"
+        #     )
+        # pkg("llvm-runtime").requires(
+        #     f"@{spec.versions}", when=f"%[deptypes=build] {spec.name}@{spec.versions}"
+        # )
+
+        
+    
     @run_after("install")
     def post_install(self):
         spec = self.spec
