@@ -1176,15 +1176,16 @@ class Llvm(CMakePackage, CudaPackage, LlvmDetection, CompilerPackage):
                 type="link",
                 description=f"Inject gcc-runtime when llvm is used as {language} compiler"
             )
-        #     pkg("*").depends_on(
-        #         f"llvm-runtime@{spec.version}",
-        #         when=f"%[deptypes=build virtuals={language}] {spec.name}@{spec.versions}",
-        #         type="link",
-        #         description=f"Inject llvm-runtime when llvm is used as {language} compiler"
-        #     )
-        # pkg("llvm-runtime").requires(
-        #     f"@{spec.versions}", when=f"%[deptypes=build] {spec.name}@{spec.versions}"
-        # )
+        
+            pkg("*").depends_on(
+                f"llvm-runtime@{spec.version}",
+                when=f"%[deptypes=build virtuals={language}] {spec.name}@{spec.versions}",
+                type="link",
+                description=f"Inject llvm-runtime when llvm is used as {language} compiler"
+            )
+        pkg("llvm-runtime").requires(
+            f"@{spec.versions}", when=f"%[deptypes=build] {spec.name}@{spec.versions}"
+        )
 
         
     
